@@ -1,0 +1,241 @@
+#include <string> 
+#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <cctype>
+using namespace std;
+
+//Gabriella H.
+
+//Função para apagar cada sinal para não contar como palavra.
+void Erase_symb(char Text[]){
+  for(int i = 0; Text[i] != '\0'; i++){
+    if(Text[i] == '.' ||
+       Text[i] == ',' ||
+       Text[i] == '(' ||
+       Text[i] == ';' ||
+       Text[i] == ')'){
+       Text[i] = ' ' ;
+    }
+  }
+}
+
+//Copiar a string do texto(que é o texto).
+bool CpyF_text(char Text[]){
+    FILE *File_;
+    File_ = fopen("texto.txt", "rt");
+    fgets(Text,9999,File_);
+    fclose(File_); 
+    return 0;   
+}
+
+//Função para apagar os espaços.
+void Delet_space(char Text[],char Text_erased[]){
+  int i = 0;
+  int j = 0;
+  while(Text[i] != '\0'){
+    if(Text[i] == ' ' && Text[i + 1 == ' ']){
+      while(Text[i + 1] == ' ') {
+      i++;
+      continue;
+      }
+    }   
+    Text_erased[j] = Text[i];
+    j++;
+    i++;
+  } 
+}
+
+//Aqui guarda a palavra;
+struct Word{
+  char WD[20];
+  int Amount = 1;
+};
+
+//Função para ler todo o arquivo.
+int Total_word(char FL[]){
+  char Space;
+  int Amount,Size;
+  FILE *File_;
+  Amount = 0;
+  Size = 0;
+  Space = '\0';
+  File_ = fopen(FL, "rt");
+  while(!feof(File_)){
+    Space = getc(File_);
+    Size++;
+    if((Space == ' ') || (Space == '\n')){
+      Amount++;
+    }
+  } 
+  fclose(File_);
+  return Amount;
+}
+
+//Função para contar as palavras.
+int Much_word(char Text_erased[]){
+  int i = 0;
+  int Much = 1;
+  while(Text_erased[i] != '\0'){
+    if(Text_erased[i] == ' '){
+      Much++;
+    }
+    i++;
+  }
+  return Much;
+}
+
+//Função para separar uma palavra da outra.
+void BreakPart_word(char Text_erased[],string Word[]){
+  int i = 0;
+  int j = 0;
+  while(Text_erased[i] != '\0'){
+    if(Text_erased[i] != ' '){
+      Word[j] += Text_erased[i];
+    }
+    else{
+      j++;
+    }
+    i++;
+  }
+}
+
+//Função para por em letras minusculas.
+Word* In_lowercase(Word pointer[],int n){
+  int Much = 0;
+  char T[20];
+  for(int i = 0; i < n; i++){
+    while(pointer[i].WD[Much] != '\0'){
+      T[Much] = tolower(pointer[i].WD[Much]);
+      pointer[i].WD[Much] = T[Much];
+      Much++;
+    }
+    Much = 0;
+  } 
+  return pointer;
+}
+
+
+//Onde salva as mudanças do arquivo, e onde mostra o total de palavras em quantidade.
+Word* Show_stats(string BreakPart_WD[], Word pointer[],int &n, int Num_word){
+  char aux[20];
+  int ret = -1;
+  for(int i = 0; i < Num_word - 1; i++){
+    int x = -1;
+    strcpy(aux,BreakPart_WD[i].c_str());
+    for(int k = 0; k < n - 1; k++){
+      ret = strcmp(aux, pointer[k].WD);
+      if(ret == 0){
+        x = k;
+        break;
+      }
+    }
+  if(x == -1){
+    n++;
+    pointer = (Word*)realloc(pointer,sizeof(Word)*n);
+    strcpy(pointer[n - 1].WD,BreakPart_WD[i].c_str());
+    pointer[n - 1].Amount = 1;
+  }
+  else{
+    pointer[x].Amount++;
+  }
+ }
+ return pointer;
+}
+
+//Função para deixar em ordem alfabética
+void Seq_WD_alphabet(Word pointer[],int n){
+  int ret = -1;
+In_lowercase(pointer,n);
+  for(int i = 0; i < n; i++){
+    for(int j = i + 1; j < n; j++){
+      ret = strcmp(pointer[i].WD,pointer[j].WD);
+      if(ret > 0){
+        Word aux = pointer[i];
+        pointer[i] = pointer[j];
+        pointer[j] = aux;
+      }
+    }
+  }
+  for(int i = 0; i < n; i++){
+    cout << "["<< pointer[i].WD << "] aparece (" << pointer[i].Amount << ") vezes" << endl; 
+  }
+}
+
+//Imprime as mudanças do arquivo.
+void Print_stats(Word pointer[],int n){
+  for(int i = 0; i < n; i++){
+    cout << "["<< pointer[i].WD << "] aparece (" << pointer[i].Amount << ") vezes" << endl; 
+  }
+}
+
+//Função por ordem pela quantidade de vezes que aparece.
+void Seq_WD_Amount(Word pointer[],int n){
+  for(int i = 0; i < n; i++){
+    for(int j = i + 1; j < n;j++){
+      if(pointer[i].Amount < pointer[j].Amount){
+        Word aux = pointer[i];
+        pointer[i] = pointer[j];
+        pointer[j] = aux;
+      }
+    }
+  }
+  for(int i = 0; i < n; i++){
+    cout << "["<< pointer[i].WD << "] aparece (" << pointer[i].Amount << ") vezes" << endl; 
+  }
+}
+//(int argc,char*argv[]) para executar na prompt.
+int main(int argc,char*argv[]){
+  int Num_word;
+  char op;
+  char Text[9999];
+  char Text_erased[9999];
+  string Fin_text[699];
+  string Fator[644];
+  bool ret = false;
+  Word *pointer = NULL;
+  int n = 0;
+  pointer = (Word*) malloc(sizeof(Word) *n);
+  ret = CpyF_text(Text);
+  Erase_symb(Text);
+  Delet_space(Text,Text_erased);
+  Num_word = Much_word(Text_erased);
+  BreakPart_word(Text_erased,Fator);
+  pointer = Show_stats(Fator,pointer,n,Num_word);
+  
+  //Comandos para serem feitos na prompt,(int argc,char*argv[]).
+  if(argc > 1){
+    if(!strcmp(argv[1],"-a")){
+      Seq_WD_alphabet(pointer,n); 
+    }
+    else if(!strcmp(argv[1],"-n")){
+      Seq_WD_Amount(pointer,n);
+    }
+    else if(!strcmp(argv[1],"-all")){
+      Seq_WD_alphabet(pointer,n); 
+      cout<<"\n\n";
+      Seq_WD_Amount(pointer,n);
+    }
+  }
+      
+  cout << "Total de palavras no texto é de"<< Num_word << " palavras" << endl;
+
+  cout << "\n\n\n"<< endl;
+
+  cout << "Quantidade de vezes que aparece em ordem alfabética: \n"<< endl;
+  Seq_WD_alphabet(pointer,n);
+
+  cout << "\n\n\n"<< endl;
+
+  cout << "Quantidade de vezes que aparece em ordem do texto: \n"<< endl;
+  Print_stats(pointer,n);
+
+  cout << "\n\n\n"<< endl;
+    
+  cout << "Quantidade de vezes que aparece em ordem decrescente: \n"<< endl;
+  Seq_WD_Amount(pointer,n);
+      
+  cout << "\n\n\n"<< endl;
+  
+}
