@@ -1,0 +1,332 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+//#include <cctype> <- para linux
+
+#if defined(_WIN32) || defined(_WIN64)
+void limpaTela()
+{
+  system("cls");
+}
+#else defined(__linux__) || defined(__unix__) //limpa a tela nos dois sistemas operacionais.
+void limpaTela()
+{
+  system("clear");
+}
+#endif
+
+typedef struct paciente
+{
+  char nome[20];
+  char grau;
+  struct paciente *prox;
+}Paciente;
+
+typedef struct fila
+{
+  Paciente *inicio;
+  Paciente *fim;
+} Fila;
+
+int filaVazia(Fila *f)
+{
+  if(f->incio == NULL)
+  {
+    limpaTela();
+    printf("Fila vazia!");
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+Fila *criaFila()
+{
+  Fila *fi = (Fila *)malloc(sizeof(Fila));
+  if(fi != NULL)
+  {
+    fi->fim =  NULL;
+    fi->inicio = NULL;
+  }
+  return fi;
+}
+
+char perguntaGrau()
+{
+  char grau;
+  do
+  {
+    getchar();
+    printf("digite o seu grau de urgencia:\n(V) Verde.\n(A) Amarelo.\n-> ");
+    scanf("%c", &grau);
+    limpaTela();
+    grau = toupper(grau); //toupper funciona no linux com a biblioteca cctype, mas funciona sem se for Windows.
+    if(grau != 'A' && grau != 'V')
+    {
+      limpaTela();
+      printf("Alternativa incorreta digite novamente!\n\n");
+    }
+  }while(grau != 'A' && grau != 'V');
+  return grau;
+}
+
+void addFila(Fila *f, Paciente *dado)
+{
+  Paciente *aux = (Paciente *)malloc(sizeof(Paciente));
+  if(aux == NULL)
+  {
+    printf("Erro alocação\n");
+    return;
+  }
+  else
+  {
+    strcpy(aux->nome, dado->nome);
+    aux->grau = dado->grau;
+    aux->prox = NULL;
+    if(f->inicio == NULL)
+    {
+      f->inicio = aux;
+    }
+    else
+    {
+      f->fim->prox = aux;
+      if(f->inicio->prox == NULL)
+      {
+        f->inicio->prox = aux;
+      }
+    }
+    f->fim = aux;
+    return;
+  }
+}
+
+void imprimeFila(Fila *f)
+{
+  Paciente *aux = f->inicio;
+  if(filaVazia(f) == 0)
+  {
+    do
+    {
+      printf("Nome: %s", aux->nome);
+      printf("Grau: %c", aux->grau);
+      printf("\n");
+      aux = aux->prox;
+    }while(aux != NULL);
+  }
+}
+
+void printPacienteRemovido(Paciente *aux)
+{
+  printf("Nome: %s",aux->nome);
+  printf("Grau: %c \n",aux->grau);
+  printf("Paciente Removido!!");
+  printf("\n");
+}
+
+void remover(Fila *f)
+{
+  Paciente *aux = f->inicio;
+  Paciente *temp = (Paciente *)malloc(sizeof(Paciente));
+  char grau;
+  if(filaVazia(f) == 0)
+  {
+    grau = perguntaGrau();
+    do
+    {
+      if(aux->grau == grau)
+      {
+        printPacienteRemovido(aux);
+        if(aux->prox != NULL)
+        {
+          *aux = *aux->prox;
+        }
+        else
+        {
+          if(f->inicio->prox == NULL)
+          {
+            f->inicio = NULL;
+          }
+          free(aux);
+          temp->prox = NULL;
+        }
+        break;
+      }
+      temp = aux;
+      aux = aux->prox;
+    }while(aux != NULL);
+  }
+}
+
+void cadastrar(Fila *f)
+{
+  Paciente *aux = (Paciente *)malloc(sizeof(Paciente));
+  printf("digite o seu nome: \n-> ");
+  scanf("%s", aux->nome);
+  aux->grau = pergunteGrau();
+  addFila(f, aux);
+  limpaTela();
+  printf("Cadastra com Sucesso!\n\n");
+}
+ 
+ Paciente *procureNome(Fila *f,char nome[])
+ {
+  int compara;
+  Paciente *aux = f->incio;
+  dolaslççall
+  {
+    if((compara = strcmp(aux->nome,nome)) == 0)
+    {
+      return aux;
+      printf("%s", aux->nome);
+    }
+    aux = aux->prox;
+  }while(aux != NULL);
+  limpatela();
+  printf("Nome invalido digite novamente!\n\n");
+  return NULL;
+ }
+ 
+ int contaFilaUrgencia(Fila *f,Paciente *temp)
+ {
+  int compara;
+  int cont = 0;
+  Paciente *aux = f->inicio;
+  do
+  {
+    if(aux->grau == temp->grau)
+    {
+      cont++;
+    }
+    aux = aux->prox;
+  }while(aux != NULL);
+  return cont;
+ }
+ 
+ void pesquisaPaciente(Fila *f)
+ {
+   char nome[20];
+   Paciente *aux = (Paciente *)malloc(sizeof(Paciente));
+   if(filaVazia(f) == 0)
+   {
+    printf("\nDigite o nome do paciente: \n-> ");
+    scanf("%s", nome);
+    limpaTela();
+    aux = procuraNome(f, nome);
+    if(aux != NULL)
+    {
+      int cont = contaFilaUrgencia(f, aux);
+      printf("%s é o %d da fila de urgencia %c", aux->nome, cont, aux->grau);
+    }
+   }
+ }
+ 
+ void filaUrgencia(Fila *f)
+ {
+    Paciente *aux = f->inicio;
+    int i = 0;
+    if (filaVazia(f) == 0)
+    {
+        char grau = perguntaGrau();
+        do
+        {
+            if (grau == aux->grau) // Só printa quando o grau digitado for igual ao cadastrado.
+            {
+                i++;
+                printf("Posição %d da fila/", i);
+                printf(" Nome: %s", aux->nome);
+                printf("/ Grau %c \n", aux->grau);
+            }
+            aux = aux->prox;
+        } while (aux != NULL);
+        if (i == 0)
+        {
+            printf("Ninguem foi cadastrado nesse grau.\n");
+        }
+    }
+}
+
+int montaMenu() // Função que monta o menu na tela.
+{
+    int opc;
+    printf("\nDigite a opção: \n");
+
+    printf("(1) Cadastrar paciente.\n");
+    printf("(2) Remover paciente.\n");
+    printf("(3) Pesquisar posição do paciente.\n");
+    printf("(4) Visualizar fila completa.\n");
+    printf("(5) Visualizar fila por tipo de urgencia.\n");
+    printf("(6) Consultar situação da fila.\n");
+    printf("(7) Sair.\n-> ");
+    scanf("%d", &opc);
+    limpaTela();
+    return opc;
+}
+
+int contaOcupado(Fila *f)
+{
+    Paciente *aux = f->inicio;
+    int i = 0;
+    do
+    {
+        i++;
+        aux = aux->prox;
+    } while (aux != NULL);
+    return i;
+}
+
+void situacaoFila(Fila *f) // função que mostra os dados da fila.
+{
+    if (filaVazia(f) == 0)
+    {
+        printf("Total de vagas ocuapadas: %d", contaOcupado(f));
+    }
+}
+
+void menu(Fila *fila) // Função menu.
+{
+    int opc;
+    do
+    {
+        opc = montaMenu();
+        switch (opc)
+        {
+        case 1:
+            cadastrar(fila);
+            break;
+
+        case 2:
+            remover(fila);
+            break;
+
+        case 3:
+            pesquisaPaciente(fila);
+            break;
+
+        case 4:
+            imprimeFila(fila);
+            break;
+
+        case 5:
+            filaUrgencia(fila);
+            break;
+        case 6:
+            situacaoFila(fila);
+            break;
+        case 7:
+            printf("Saindo!!\n");
+            break;
+            default:
+               printf("Opção invalida digite novamente!\n");
+        }
+    } while (opc != 7);
+}
+
+int main()
+{
+    Fila *fila = criaFila();
+    menu(fila);
+    // cadastrar(fila);
+    // imprimeFila(fila);
+}
